@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>紅綠燈計時器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .light {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            border-radius: 50%;
+            background-color: transparent;
+        }
+        #start-button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>紅綠燈計時器</h1>
+    <div id="traffic-light" class="light"></div>
+    <div id="countdown-text"></div>
+    <div>
+        <label for="flash-frequency">輸入震動頻率 (秒): </label>
+        <input type="number" id="flash-frequency" min="1" value="2">
+    </div>
+    <div style="margin-top: 10px;">
+        <label for="green-light-time">輸入綠燈倒數時間 (秒): </label>
+        <input type="number" id="green-light-time" min="1" value="10">
+    </div>
+    <button id="start-button">開始計時</button>
+
+    <script>
+        // 引用 HTML 元素
+        const trafficLight = document.getElementById('traffic-light');
+        const countdownText = document.getElementById('countdown-text');
+        const flashFrequencyInput = document.getElementById('flash-frequency');
+        const greenLightTimeInput = document.getElementById('green-light-time');
+        const startButton = document.getElementById('start-button');
+
+        // 開始計時流程
+        startButton.addEventListener('click', startSequence);
+
+        async function startSequence() {
+            try {
+                // 獲取輸入的閃爍頻率和綠燈時間
+                const flashFrequency = parseInt(flashFrequencyInput.value) || 2;
+                const greenLightTime = parseInt(greenLightTimeInput.value) || 10;
+
+                // 顯示紅燈 7 秒
+                await showLight('red', 7);
+                // 顯示綠燈
+                await showLight('green', greenLightTime, flashFrequency);
+
+                // 計時結束
+                countdownText.textContent = "計時結束";
+                trafficLight.style.backgroundColor = 'transparent';
+            } catch (error) {
+                console.error("An error occurred:", error);
+            }
+        }
+
+        function showLight(color, countdown, flashFrequency = 2) {
+            return new Promise(async (resolve) => {
+                for (let i = countdown; i > 0; i--) {
+                    // 更新燈號顏色和倒數時間
+                    trafficLight.style.backgroundColor = color;
+                    countdownText.textContent = `倒數: ${i} 秒`;
+
+                    // 綠燈震動邏輯
+                    if (color === 'green' && i % flashFrequency === 0) {
+                        if (navigator.vibrate) {
+                            navigator.vibrate(100); // 震動 100 毫秒
+                        }
+                    }
+
+                    // 延遲 1 秒
+                    await delay(1000);
+                }
+                resolve();
+            });
+        }
+
+        // 延遲函數
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>
